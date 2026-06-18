@@ -1,0 +1,20 @@
+# MTMC pipeline dependencies — uncomment as each module gets implemented.
+# The stub scaffold itself needs NONE of these (pure stdlib).
+
+# --- core ---
+# numpy
+# opencv-python          # M0 decode, M1 undistort/homography, crops
+
+# --- detection / tracking (M2, M3) ---
+# ultralytics            # YOLOv8/YOLO11 detector
+# torch
+# torchvision
+# scipy                  # Hungarian matching (linear_sum_assignment), Kalman helpers
+# filterpy               # Kalman filter (optional)
+
+# --- ReID (M5) ---
+# torchreid              # OSNet and other ReID backbones
+
+# --- metrics (M11) ---
+# motmetrics             # IDF1 / MOTA
+# trackeval              # HOTA
