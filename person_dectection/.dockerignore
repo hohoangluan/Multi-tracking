@@ -1,0 +1,15 @@
+.git
+.gitignore
+.dockerignore
+*.pyc
+__pycache__
+.pytest_cache
+*.log
+*.pyo
+.DS_Store
+*.swp
+*.swo
+*~
+.env
+outputs/
+*.md
