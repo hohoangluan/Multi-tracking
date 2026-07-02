@@ -6,9 +6,10 @@
 # opencv-python          # M0 decode, M1 undistort/homography, crops
 
 # --- detection / tracking (M2, M3) ---
-# ultralytics            # YOLOv8/YOLO11 detector
-# torch
-# torchvision
+ultralytics            # YOLOv8/YOLO11 detector
+torch
+torchvision
+tracker
 # scipy                  # Hungarian matching (linear_sum_assignment), Kalman helpers
 # filterpy               # Kalman filter (optional)
 
