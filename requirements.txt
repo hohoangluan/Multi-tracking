@@ -6,12 +6,12 @@
 # opencv-python          # M0 decode, M1 undistort/homography, crops
 
 # --- detection / tracking (M2, M3) ---
-ultralytics            # YOLOv8/YOLO11 detector
+ultralytics            # YOLOv8/YOLO11 detector + built-in ByteTrack/BoT-SORT tracker
 torch
 torchvision
-tracker
-# scipy                  # Hungarian matching (linear_sum_assignment), Kalman helpers
-# filterpy               # Kalman filter (optional)
+lap                    # Hungarian solver ultralytics prefers over scipy when available
+# scipy                  # ultralytics falls back to this for Hungarian if lap is absent
+# filterpy               # Kalman filter (optional) — not used; ultralytics has its own
 
 # --- ReID (M5) ---
 # torchreid              # OSNet and other ReID backbones
