@@ -3,6 +3,7 @@ pipeline_detail.md
 pipeline_diagram.html
 dataset/
 annotations/
+out/
 *.pt
 *.png
 # Byte-compiled / optimized / DLL files
