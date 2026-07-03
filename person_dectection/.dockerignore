@@ -13,3 +13,7 @@ __pycache__
 .env
 outputs/
 *.md
+dataset/
+annotations/
+docs/
+*.pt

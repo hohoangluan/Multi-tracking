@@ -1,6 +1,7 @@
 import unittest
+from pathlib import Path
 
-from tracking.run_tracker import accumulate_track_history
+from tracking.run_tracker import accumulate_track_history, frame_image_path
 
 
 class TestAccumulateTrackHistory(unittest.TestCase):
@@ -31,6 +32,19 @@ class TestAccumulateTrackHistory(unittest.TestCase):
         history: dict = {}
         accumulate_track_history(history, frame_idx=0, boxes_xyxy=[], track_ids=[])
         self.assertEqual(history, {})
+
+
+class TestFrameImagePath(unittest.TestCase):
+    def test_zero_padded_name_matches_cvat_frame_index(self):
+        # Must line up with cvat_export's frame=str(frame_idx) and M0's frame_%06d.jpg dump.
+        self.assertEqual(
+            frame_image_path(Path("/out/frames"), 0),
+            Path("/out/frames/frame_000000.jpg"),
+        )
+        self.assertEqual(
+            frame_image_path(Path("/out/frames"), 42),
+            Path("/out/frames/frame_000042.jpg"),
+        )
 
 
 if __name__ == "__main__":

@@ -37,6 +37,16 @@ def accumulate_track_history(
         history.setdefault(track_id, []).append((frame_idx, x1, y1, x2, y2))
 
 
+def frame_image_path(frames_dir: Path, frame_idx: int) -> Path:
+    """Path an undistorted frame is written to, named so it lines up with the CVAT XML.
+
+    The CVAT export keys every <box> by `frame_idx` (see cvat_export.boxes_to_cvat_xml),
+    and M0's own dumper uses the same `frame_%06d.jpg` pattern — so a CVAT task built from
+    these images imports the annotations.xml with zero frame-offset.
+    """
+    return frames_dir / f"frame_{frame_idx:06d}.jpg"
+
+
 def parse_args():
     p = argparse.ArgumentParser(description="M3 tracker (ByteTrack via ultralytics) -> CVAT export")
     p.add_argument("video", help="Path to source video, e.g. dataset/2026-06-10/00-52-57.mp4")
@@ -46,6 +56,18 @@ def parse_args():
     p.add_argument("--conf", type=float, default=0.3, help="Detection confidence threshold")
     p.add_argument("--imgsz", type=int, default=960, help="Inference image size")
     p.add_argument("--k1", type=float, default=-0.30, help="Fisheye correction coefficient (see M0Decoder)")
+    p.add_argument("--frames-dir", default=None,
+                   help="If set, dump each undistorted frame as JPEG here (upload these to "
+                        "CVAT alongside annotations.xml)")
+    p.add_argument("--jpeg-quality", type=int, default=92,
+                   help="JPEG quality for --frames-dir output (default: 92)")
+    p.add_argument("--cvat-video", default=None,
+                   help="If set, write ONE undistorted mp4 (no boxes) here as the media to "
+                        "upload to CVAT. Every source frame is written exactly once, so its "
+                        "frame index matches annotations.xml — a fraction of --frames-dir's size.")
+    p.add_argument("--fps", type=float, default=20.0,
+                   help="Frame rate stamped on --cvat-video / --preview-video output "
+                        "(metadata only; does not affect frame indexing). Default: 20")
     p.add_argument("--preview-video", default=None, help="If set, write an annotated mp4 here")
     p.add_argument("--max-frames", type=int, default=None, help="Stop after N frames (fast iteration)")
     return p.parse_args()
@@ -64,6 +86,11 @@ def main():
     args = parse_args()
     out_dir = Path(args.output)
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    frames_dir = Path(args.frames_dir) if args.frames_dir else None
+    if frames_dir is not None:
+        frames_dir.mkdir(parents=True, exist_ok=True)
+    jpeg_params = [cv2.IMWRITE_JPEG_QUALITY, args.jpeg_quality]
 
     model = YOLO(args.model)
     decoder = M0Decoder(source=args.video, k1=args.k1)
@@ -91,6 +118,11 @@ def main():
 
         accumulate_track_history(history, frame.frame_idx, boxes_xyxy, track_ids)
 
+        # Dump the SAME undistorted frame the boxes were computed on — so the frame images
+        # and the CVAT boxes share one coordinate system and one frame index.
+        if frames_dir is not None:
+            cv2.imwrite(str(frame_image_path(frames_dir, frame.frame_idx)), frame.data, jpeg_params)
+
         if args.preview_video:
             disp = draw_preview(frame.data.copy(), boxes_xyxy, track_ids)
             if writer is None:
@@ -108,6 +140,8 @@ def main():
     out_xml = out_dir / "annotations.xml"
     boxes_to_cvat_xml(history, total_frames=frame_count, out_path=out_xml)
     print(f"Processed {frame_count} frames, {len(history)} tracks -> {out_xml}")
+    if frames_dir is not None:
+        print(f"Frames -> {frames_dir}")
     if args.preview_video:
         print(f"Preview video -> {args.preview_video}")
 
