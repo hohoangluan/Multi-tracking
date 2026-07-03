@@ -7,7 +7,7 @@ services:
     image: reid-pipeline       # name to tag the built image with
 
     volumes:                   # = the -v flags: host path : path inside container
-      - ./datasets:/data       #   videos on the server show up as /data in the container
+      - ./dataset:/data        #   videos (./dataset/<DATE>/<name>.mp4) show up under /data
       - ./out:/out             #   results written here come back out to ./out on the host
 
     deploy:                    # this block = --gpus, but pinned to ONE gpu (shared server)

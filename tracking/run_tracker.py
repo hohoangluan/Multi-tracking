@@ -96,7 +96,8 @@ def main():
     decoder = M0Decoder(source=args.video, k1=args.k1)
 
     history: dict[int, list[tuple[int, float, float, float, float]]] = {}
-    writer = None
+    writer = None        # annotated preview (boxes drawn)
+    cvat_writer = None   # clean undistorted media for CVAT (no boxes)
     frame_count = 0
 
     for frame in decoder:
@@ -123,12 +124,22 @@ def main():
         if frames_dir is not None:
             cv2.imwrite(str(frame_image_path(frames_dir, frame.frame_idx)), frame.data, jpeg_params)
 
+        # Clean undistorted media for CVAT: one write per source frame keeps the video's
+        # frame index aligned with annotations.xml (no boxes burned in).
+        if args.cvat_video:
+            if cvat_writer is None:
+                h, w = frame.data.shape[:2]
+                cvat_writer = cv2.VideoWriter(
+                    args.cvat_video, cv2.VideoWriter_fourcc(*"mp4v"), args.fps, (w, h)
+                )
+            cvat_writer.write(frame.data)
+
         if args.preview_video:
             disp = draw_preview(frame.data.copy(), boxes_xyxy, track_ids)
             if writer is None:
                 h, w = disp.shape[:2]
                 writer = cv2.VideoWriter(
-                    args.preview_video, cv2.VideoWriter_fourcc(*"mp4v"), 25, (w, h)
+                    args.preview_video, cv2.VideoWriter_fourcc(*"mp4v"), args.fps, (w, h)
                 )
             writer.write(disp)
 
@@ -136,12 +147,16 @@ def main():
 
     if writer is not None:
         writer.release()
+    if cvat_writer is not None:
+        cvat_writer.release()
 
     out_xml = out_dir / "annotations.xml"
     boxes_to_cvat_xml(history, total_frames=frame_count, out_path=out_xml)
     print(f"Processed {frame_count} frames, {len(history)} tracks -> {out_xml}")
     if frames_dir is not None:
         print(f"Frames -> {frames_dir}")
+    if args.cvat_video:
+        print(f"CVAT media video -> {args.cvat_video}")
     if args.preview_video:
         print(f"Preview video -> {args.preview_video}")
 
