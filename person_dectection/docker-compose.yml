@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  yolo-detector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yolo26-detector
+    volumes:
+      - ./images:/app/images          # Put input images here
+      - ./outputs:/app/outputs        # Annotated images written here (--save)
+      - ./models:/app/models          # Optional: mount pre-downloaded weights
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    # Override CMD to detect a specific image, e.g.:
+    #   docker compose run yolo-detector images/crowd.jpg --save --conf 0.3
+    # Default (no override) prints --help.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

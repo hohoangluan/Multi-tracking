@@ -1,0 +1,18 @@
+# Keep the build context small: never send raw data / outputs to the Docker daemon.
+*.zip
+datasets/
+undistorted/
+cvat_export/
+outputs/
+frames/
+
+# Python / git cruft
+__pycache__/
+*.pyc
+.git/
+.gitignore
+CLAUDE.md
+
+# Big weights we don't use in this image (yolo26m.pt IS copied, so it is NOT ignored)
+yolov8n.pt
+yolo26l.pt

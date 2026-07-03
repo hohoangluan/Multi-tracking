@@ -1,0 +1,19 @@
+# Saved `docker run` config for the GPU pre-annotation pipeline.
+# Instead of retyping all the flags, run:  docker compose run --rm tracker <video> <args>
+
+services:
+  tracker:                     # service name — you refer to it as `tracker` in commands
+    build: .                   # = docker build .   (uses the Dockerfile in this folder)
+    image: reid-pipeline       # name to tag the built image with
+
+    volumes:                   # = the -v flags: host path : path inside container
+      - ./datasets:/data       #   videos on the server show up as /data in the container
+      - ./out:/out             #   results written here come back out to ./out on the host
+
+    deploy:                    # this block = --gpus, but pinned to ONE gpu (shared server)
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']   # use ONE free GPU. Pick a free index from `nvidia-smi`
+              capabilities: [gpu]  # (Memory-Usage near 0). Currently GPU 1 or 3 are free.

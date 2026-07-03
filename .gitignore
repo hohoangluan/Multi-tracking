@@ -2,6 +2,9 @@
 pipeline_detail.md
 pipeline_diagram.html
 dataset/
+annotations/
+*.pt
+*.png
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
